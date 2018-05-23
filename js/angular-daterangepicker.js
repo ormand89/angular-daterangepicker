@@ -132,21 +132,26 @@
           var eventType, results;
           el.daterangepicker(angular.extend(opts, {
             autoUpdateInput: false
-          }), function(start, end) {
+          }));
+
+          el.on('apply.daterangepicker', function(ev, picker) {
             return $scope.$apply(function() {
-              return $scope.model = opts.singleDatePicker ? start : {
-                startDate: start,
-                endDate: end
+              return $scope.model = opts.singleDatePicker ? picker.startDate : {
+                startDate: picker.startDate,
+                endDate: picker.endDate
               };
             });
           });
+
           _picker = el.data('daterangepicker');
           results = [];
           for (eventType in opts.eventHandlers) {
-            results.push(el.on(eventType, function(e) {
+            results.push(el.on(eventType, function(e, picker) {
               var eventName;
               eventName = e.type + '.' + e.namespace;
-              return $scope.$evalAsync(opts.eventHandlers[eventName]);
+              return $scope.$evalAsync(function () {
+                return opts.eventHandlers[eventName](e, picker);
+              });
             }));
           }
           return results;
